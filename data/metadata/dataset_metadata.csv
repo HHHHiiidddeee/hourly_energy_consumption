@@ -1,0 +1,15 @@
+file_name,n_rows,n_columns
+AEP_hourly.csv,121273,2
+COMED_hourly.csv,66497,2
+DAYTON_hourly.csv,121275,2
+DEOK_hourly.csv,57739,2
+DOM_hourly.csv,116189,2
+DUQ_hourly.csv,119068,2
+EKPC_hourly.csv,45334,2
+est_hourly.parquet,178262,12
+FE_hourly.csv,62874,2
+NI_hourly.csv,58450,2
+PJME_hourly.csv,145366,2
+PJMW_hourly.csv,143206,2
+pjm_hourly_est.csv,178262,13
+PJM_Load_hourly.csv,32896,2

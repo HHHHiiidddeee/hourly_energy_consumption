@@ -1,0 +1,18 @@
+{
+  "model_name": "RNNModel",
+  "training_info": {
+    "start_time": "2026-05-08T15:50:29.190387",
+    "end_time": "2026-05-08T16:05:36.690474",
+    "total_epochs": 41,
+    "best_val_loss": 0.07113252735386293,
+    "learning_rate": 0.001,
+    "weight_decay": 1e-05,
+    "early_stopping_patience": 10,
+    "device": "cpu"
+  },
+  "final_metrics": {
+    "best_val_loss": 0.07113252735386293,
+    "final_train_loss": 0.07392910330123464,
+    "final_val_loss": 0.07709649112075567
+  }
+}

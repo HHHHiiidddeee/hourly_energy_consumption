@@ -1,0 +1,18 @@
+{
+  "model_name": "TimeSeriesTransformerModel",
+  "training_info": {
+    "start_time": "2026-05-10T17:01:43.392767",
+    "end_time": "2026-05-10T17:42:09.644286",
+    "total_epochs": 26,
+    "best_val_loss": 0.07949870286716355,
+    "learning_rate": 0.001,
+    "weight_decay": 1e-05,
+    "early_stopping_patience": 10,
+    "device": "cpu"
+  },
+  "final_metrics": {
+    "best_val_loss": 0.07949870286716355,
+    "final_train_loss": 0.07772117575079622,
+    "final_val_loss": 0.08173396303835842
+  }
+}
