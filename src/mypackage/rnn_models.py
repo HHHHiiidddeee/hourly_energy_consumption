@@ -31,7 +31,17 @@ class RNNModel(nn.Module):
         out = self.batch_norm(out[:, -1, :])
         out = self.fc(out)
         return out
-    
+
+    def get_config(self):
+        return {
+            "input_size": self.rnn.input_size,
+            "hidden_size": self.rnn.hidden_size,
+            "num_layers": self.rnn.num_layers,
+            "dropout": self.rnn.dropout,
+            "output_size": self.fc.out_features,
+            "rnn_type": type(self.rnn).__name__,
+            "bidirectional": self.rnn.bidirectional
+        }
 
 class RNNAndCNNModel(nn.Module):
     def __init__(self, input_size: int, hidden_size: int, kernel_size: int, num_conv_layers: int,
@@ -81,3 +91,16 @@ class RNNAndCNNModel(nn.Module):
         out = self.batch_norm(out[:, -1, :])
         out = self.fc(out)
         return out
+
+    def get_config(self):
+        return {
+            "input_size": self.rnn.input_size,
+            "hidden_size": self.rnn.hidden_size,
+            "num_conv_layers": len(self.cnn_blocks),
+            "num_rnn_layers": self.rnn.num_layers,
+            "kernel_size": self.cnn_blocks[0][0].kernel_size[0],
+            "dropout": self.rnn.dropout,
+            "output_size": self.fc.out_features,
+            "rnn_type": type(self.rnn).__name__,
+            "bidirectional": self.rnn.bidirectional
+        }

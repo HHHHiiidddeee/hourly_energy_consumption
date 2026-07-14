@@ -273,6 +273,7 @@ class Trainer:
         
         checkpoint = {
             'model_state_dict': self.model.state_dict(),
+            "model_config": self.model.get_config(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'history': self.history,
             'training_info': self.training_info
