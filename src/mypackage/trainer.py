@@ -171,53 +171,64 @@ class Trainer:
         
         return avg_loss, avg_mae, avg_rmse
 
-    def train(self, num_epochs: int, verbose: bool = True) -> Dict[str, List[float]]:
-        """Train the model"""
+    def train(self, num_epochs: int, verbose: int = 1) -> Dict[str, List[float]]:
+        """Train the model.
+
+        verbose:
+            0: no logs
+            1: show epoch progress and early stopping messages
+            2: show only early stopping messages
+        """
+        if isinstance(verbose, bool):
+            verbose = int(verbose)
+        if not isinstance(verbose, int) or verbose < 0:
+            raise ValueError("verbose must be an integer >= 0")
+
         self.training_info['start_time'] = datetime.now().isoformat()
+
+        if self.early_stopping is not None:
+            self.early_stopping.verbose = verbose == 1
 
         for epoch in range(num_epochs):
             train_loss, train_mae, train_rmse = self._train_epoch()
-
-            # Validation (returns NaN tuple if no val_loader)
             val_loss, val_mae, val_rmse = self._validate_epoch()
 
-            # Store history
             self.history['train_loss'].append(train_loss)
             self.history['val_loss'].append(val_loss)
             self.history['train_mae'].append(train_mae)
             self.history['val_mae'].append(val_mae)
             self.history['train_rmse'].append(train_rmse)
             self.history['val_rmse'].append(val_rmse)
-            
-            # Early stopping
+
             if self.early_stopping is not None:
                 self.early_stopping(val_loss, self.model)
 
-            # Update best val loss only when val_loss is numeric
             if not np.isnan(val_loss) and val_loss < self.training_info['best_val_loss']:
                 self.training_info['best_val_loss'] = val_loss
 
-            if verbose and (epoch + 1) % max(1, num_epochs // 10) == 0:
-                print(f"Epoch [{epoch+1}/{num_epochs}] - "
-                      f"Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f} - "
-                      f"Train MAE: {train_mae:.6f}, Val MAE: {val_mae:.6f}")
-            
-            if self.early_stopping.early_stop:
-                if verbose:
-                    print(f"Early stopping triggered at epoch {epoch+1}")
+            if verbose == 1 and (epoch + 1) % max(1, num_epochs // 10) == 0:
+                print(
+                    f"Epoch [{epoch + 1}/{num_epochs}] - "
+                    f"Train Loss: {train_loss:.6f}, Val Loss: {val_loss:.6f} - "
+                    f"Train MAE: {train_mae:.6f}, Val MAE: {val_mae:.6f}"
+                )
+
+            if self.early_stopping is not None and self.early_stopping.early_stop:
+                if verbose >= 1:
+                    print(f"Early stopping triggered at epoch {epoch + 1}")
                 break
 
         self.training_info['end_time'] = datetime.now().isoformat()
         self.training_info['total_epochs'] = len(self.history['train_loss'])
 
-        # Load best model if checkpoint exists, otherwise save final model
         best_ckpt = self.checkpoint_dir / "best_model.pt"
         if best_ckpt.exists():
             self.load_checkpoint(best_ckpt)
         else:
             final_path = self.checkpoint_dir / "final_model.pt"
             torch.save(self.model.state_dict(), final_path)
-            print(f"No best model checkpoint found; saved final model to {final_path}")
+            if verbose >= 1:
+                print(f"No best model checkpoint found; saved final model to {final_path}")
 
         return self.history
 
