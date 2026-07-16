@@ -105,19 +105,19 @@ def sarimax_forecast(result, test_data, pred_len):
         start = end
     return np.array(y_preds)
 
-def baseline_forecast(train, test, len_pred):
-    q, r = divmod(len(test), len_pred)
-    df = pd.concat([train, test], axis=0, ignore_index=True)
+def baseline_forecast(y_train, y_test, len_pred):
+    q, r = divmod(len(y_test), len_pred)
+    whole = np.concatenate([y_train, y_test], axis=0)
     if r > 0:
         q += 1
     else:
         r = len_pred
     pred = []
     for t in range(q):
-        start = len(train) - len_pred + t * len_pred
+        start = len(y_train) - len_pred + t * len_pred
         if t == q - 1:
             end = start + r
         else:
             end = start + len_pred
-        pred.extend(df["y"][start:end])
+        pred.extend(whole[start:end])
     return pred
