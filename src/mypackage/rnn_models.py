@@ -43,7 +43,7 @@ class RNNModel(nn.Module):
             "bidirectional": self.rnn.bidirectional
         }
 
-class RNNAndCNNModel(nn.Module):
+class RNNWithCNNModel(nn.Module):
     def __init__(self, input_size: int, hidden_size: int, kernel_size: int, num_conv_layers: int,
                  num_rnn_layers: int, dropout: float, output_size: int, rnn_type: str = "RNN",
                  bidirectional: bool = False):
@@ -66,20 +66,20 @@ class RNNAndCNNModel(nn.Module):
             out_channels = hidden_size
             self.cnn_blocks.append(
                 nn.Sequential(
-                    nn.Conv1d(in_channels, out_channels, kernel_size, padding=kernel_size // 2),
+                    nn.Conv1d(in_channels, out_channels, kernel_size, stride=2, padding=(kernel_size-2) // 2),
                     nn.BatchNorm1d(out_channels),
                     nn.ReLU(),
                     nn.Dropout(dropout)
                 )
             )
         if rnn_type == "RNN":
-            self.rnn = nn.RNN(input_size, hidden_size, num_rnn_layers, dropout=dropout,
+            self.rnn = nn.RNN(out_channels, hidden_size, num_rnn_layers, dropout=dropout,
                               bidirectional=bidirectional, batch_first=True)
         elif rnn_type == "LSTM":
-            self.rnn = nn.LSTM(input_size, hidden_size, num_rnn_layers, dropout=dropout,
+            self.rnn = nn.LSTM(out_channels, hidden_size, num_rnn_layers, dropout=dropout,
                                bidirectional=bidirectional, batch_first=True)
         elif rnn_type == "GRU":
-            self.rnn = nn.GRU(input_size, hidden_size, num_rnn_layers, dropout=dropout,
+            self.rnn = nn.GRU(out_channels, hidden_size, num_rnn_layers, dropout=dropout,
                               bidirectional=bidirectional, batch_first=True)
         self.batch_norm = nn.BatchNorm1d(hidden_size * (2 if bidirectional else 1))
         self.fc = nn.Linear(hidden_size * (2 if bidirectional else 1), output_size)
