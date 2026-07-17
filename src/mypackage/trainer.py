@@ -222,7 +222,7 @@ class Trainer:
         self.training_info['total_epochs'] = len(self.history['train_loss'])
 
         best_ckpt = self.checkpoint_dir / "best_model.pt"
-        if best_ckpt.exists():
+        if best_ckpt.exists() and self.val_loader is not None:
             self.load_checkpoint(best_ckpt)
         else:
             final_path = self.checkpoint_dir / "final_model.pt"
