@@ -11,9 +11,9 @@ def print_metrics(y_true, y_pred, title):
     mae, rmse, mape = calculate_metrics(y_true, y_pred)
     print(f"{title}:\nMAE: {mae:.2f}\nRMSE: {rmse:.2f}\nMAPE: {mape*100:.2f}%\n")
 
-def get_true_values(test_loader):
+def get_true_values(test_loader, dataset):
     y_trues = []
     for _, y in test_loader:
         y_trues.append(y.numpy())
     y_true = np.concatenate(y_trues, axis=0).reshape(-1)
-    return test_loader.inverse_transform(y_true)
+    return dataset.inverse_transform(y_true)

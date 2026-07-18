@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pandas as pd
 
-def dnn_forecast(model, test_loader, device):
+def dnn_forecast(model, test_loader, dataset, device):
     model.eval()
     y_preds = []
     with torch.no_grad():
@@ -11,7 +11,7 @@ def dnn_forecast(model, test_loader, device):
             y_pred = model(x)
             y_preds.append(y_pred.cpu().numpy())
     y_pred = np.concatenate(y_preds, axis=0).reshape(-1)
-    return test_loader.inverse_transform(y_pred)
+    return dataset.inverse_transform(y_pred)
 
 def lightgbm_forecast(model, data, pred_len):
     idx = len(data["X_train"])
