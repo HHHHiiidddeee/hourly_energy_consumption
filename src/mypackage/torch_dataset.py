@@ -75,14 +75,45 @@ class EnergyDataset(Dataset.Dataset):
 
     def _create_windows(self):
         self.windows = []
-        data_len = len(self.data)
-        for i in range(data_len, -1, -self.shift):
-            x = self.data.drop(columns=["label"]).iloc[i - self.pred_len + 1 - self.seq_len:i - self.pred_len + 1].values
-            y = self.data["label"].iloc[i - self.pred_len:i].values
+
+        if self.mode == "train":
+            source_data = self.train_data.copy()
+            target_len = len(self.train_data)
+            start_offset = 0
+
+        elif self.mode == "val":
+            source_data = pd.concat([self.train_data, self.valid_data], ignore_index=True)
+            target_len = len(self.valid_data)
+            start_offset = len(self.train_data)
+
+        elif self.mode == "test":
+            source_data = pd.concat([self.retrain_data, self.test_data], ignore_index=True)
+            target_len = len(self.test_data)
+            start_offset = len(self.retrain_data)
+
+        else:
+            source_data = self.retrain_data.copy()
+            target_len = len(self.retrain_data)
+            start_offset = 0
+
+        for i in range(target_len, -1, -self.shift):
+            target_idx = start_offset + i - 1
+
+            x_start = target_idx - self.pred_len + 1 - self.seq_len
+            x_end = target_idx - self.pred_len + 1
+            y_start = target_idx - self.pred_len
+            y_end = target_idx
+
+            if x_start < 0:
+                continue
+
+            x = source_data.drop(columns=["label"]).iloc[x_start:x_end].values
+            y = source_data["label"].iloc[y_start:y_end].values
+
             if len(x) == self.seq_len and len(y) == self.pred_len:
                 self.windows.append({
-                    'x': torch.FloatTensor(x.copy()),
-                    'y': torch.FloatTensor(y.copy())
+                    "x": torch.FloatTensor(x.copy()),
+                    "y": torch.FloatTensor(y.copy()),
                 })
     
     def __len__(self):
