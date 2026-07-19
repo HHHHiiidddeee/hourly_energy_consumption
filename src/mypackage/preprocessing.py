@@ -105,6 +105,8 @@ def create_temporal_features(df: pd.DataFrame, lags) -> pd.DataFrame:
 
 def create_multioutput_labels(df: pd.DataFrame, pred_len: int):
     df = df.rename(columns={"label": "label_0"})
+    subset = ["label_0"]
     for i in range(1, pred_len):
-        df[f"label_{i}"] = df["label_0"].shift(i)
-    return df.dropna().reset_index(drop=True)
+        df[f"label_{i}"] = df["label_0"].shift(-i)
+        subset.append(f"label_{i}")
+    return df.dropna(subset=subset).reset_index(drop=True)

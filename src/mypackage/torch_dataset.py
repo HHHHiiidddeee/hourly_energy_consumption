@@ -46,15 +46,7 @@ class EnergyDataset(Dataset.Dataset):
         self.normalize(self.valid_data)
         self.normalize(self.test_data)
 
-        match self.mode:
-            case "train":
-                self.data = self.train_data.copy()
-            case "val":
-                self.data = self.valid_data.copy()
-            case "test":
-                self.data = self.test_data.copy()
-            case "re-train":
-                self.data = self.retrain_data.copy()
+        self._apply_mode_data()
 
     def _identify_binary_columns(self):
         binary_cols = []
@@ -75,45 +67,15 @@ class EnergyDataset(Dataset.Dataset):
 
     def _create_windows(self):
         self.windows = []
-
-        if self.mode == "train":
-            source_data = self.train_data.copy()
-            target_len = len(self.train_data)
-            start_offset = 0
-
-        elif self.mode == "val":
-            source_data = pd.concat([self.train_data, self.valid_data], ignore_index=True)
-            target_len = len(self.valid_data)
-            start_offset = len(self.train_data)
-
-        elif self.mode == "test":
-            source_data = pd.concat([self.retrain_data, self.test_data], ignore_index=True)
-            target_len = len(self.test_data)
-            start_offset = len(self.retrain_data)
-
-        else:
-            source_data = self.retrain_data.copy()
-            target_len = len(self.retrain_data)
-            start_offset = 0
-
-        for i in range(target_len, -1, -self.shift):
-            target_idx = start_offset + i - 1
-
-            x_start = target_idx - self.pred_len + 1 - self.seq_len
-            x_end = target_idx - self.pred_len + 1
-            y_start = target_idx - self.pred_len
-            y_end = target_idx
-
-            if x_start < 0:
-                continue
-
-            x = source_data.drop(columns=["label"]).iloc[x_start:x_end].values
-            y = source_data["label"].iloc[y_start:y_end].values
-
+        data_len = len(self.data)
+        shift = self.shift if self.mode == "train" or self.mode == "re-train" else self.pred_len
+        for i in range(data_len, -1, -shift):
+            x = self.data.drop(columns=["label"]).iloc[i - self.pred_len + 1 - self.seq_len:i - self.pred_len + 1].values
+            y = self.data["label"].iloc[i - self.pred_len:i].values
             if len(x) == self.seq_len and len(y) == self.pred_len:
                 self.windows.append({
-                    "x": torch.FloatTensor(x.copy()),
-                    "y": torch.FloatTensor(y.copy()),
+                    'x': torch.FloatTensor(x.copy()),
+                    'y': torch.FloatTensor(y.copy())
                 })
     
     def __len__(self):
@@ -126,20 +88,33 @@ class EnergyDataset(Dataset.Dataset):
     def normalize(self, data: pd.DataFrame):
         for col in self.continuous_cols:
             data[col] = (data[col] - self.mean[col]) / self.std[col]
+
+    def _apply_mode_data(self):
+        match self.mode:
+            case "train":
+                self.data = self.train_data.copy()
+            case "val":
+                _, r = divmod(len(self.valid_data), self.pred_len)
+                offset = 0
+                if r != 0:
+                    offset = self.pred_len - r
+                self.data = pd.concat([self.train_data[-(offset + self.seq_len):].copy(), 
+                                       self.valid_data.copy()], axis=0).reset_index(drop=True)
+            case "test":
+                _, r = divmod(len(self.test_data), self.pred_len)
+                offset = 0
+                if r != 0:
+                    offset = self.pred_len - r
+                self.data = pd.concat([self.retrain_data[-(offset + self.seq_len):].copy(), 
+                                       self.test_data.copy()], axis=0).reset_index(drop=True)
+            case "re-train":
+                self.data = self.retrain_data.copy()
     
     def mode_switch(self, mode: str):
         if mode not in ["train", "test", "val", "re-train"]:
             raise ValueError("mode must be 'train', 'val', 'test', or 're-train'")
         self.mode = mode
-        match self.mode:
-            case "train":
-                self.data = self.train_data.copy()
-            case "val":
-                self.data = self.valid_data.copy()
-            case "test":
-                self.data = self.test_data.copy()
-            case "re-train":
-                self.data = self.retrain_data.copy()
+        self._apply_mode_data()
         self._create_windows()
 
     def get_retrain_data(self) -> pd.DataFrame:
