@@ -1,18 +1,18 @@
 {
   "model_name": "RNNModel",
   "training_info": {
-    "start_time": "2026-07-17T09:55:55.882293",
-    "end_time": "2026-07-17T09:56:40.030002",
-    "total_epochs": 22,
+    "start_time": "2026-07-19T09:25:16.924688",
+    "end_time": "2026-07-19T09:25:23.848242",
+    "total_epochs": 10,
     "best_val_loss": Infinity,
-    "learning_rate": 0.00043239443227223684,
-    "weight_decay": 0.0003819016709117818,
+    "learning_rate": 0.0037327254957492603,
+    "weight_decay": 1.9894979547797e-06,
     "early_stopping_patience": 10,
     "device": "cuda"
   },
   "final_metrics": {
     "best_val_loss": Infinity,
-    "final_train_loss": 0.28391820766839637,
+    "final_train_loss": 0.23964487743305873,
     "final_val_loss": NaN
   }
 }
