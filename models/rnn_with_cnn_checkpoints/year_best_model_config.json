@@ -1,0 +1,18 @@
+{
+  "model_name": "RNNWithCNNModel",
+  "training_info": {
+    "start_time": "2026-07-20T07:58:24.182340",
+    "end_time": "2026-07-20T07:59:19.087349",
+    "total_epochs": 33,
+    "best_val_loss": Infinity,
+    "learning_rate": 0.00010376122495160678,
+    "weight_decay": 0.0008920697363906588,
+    "early_stopping_patience": 10,
+    "device": "cuda"
+  },
+  "final_metrics": {
+    "best_val_loss": Infinity,
+    "final_train_loss": 0.322762441563319,
+    "final_val_loss": NaN
+  }
+}

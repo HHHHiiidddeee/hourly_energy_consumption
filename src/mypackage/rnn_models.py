@@ -48,6 +48,7 @@ class RNNWithCNNModel(nn.Module):
                  num_rnn_layers: int, dropout: float, output_size: int, rnn_type: str = "RNN",
                  bidirectional: bool = False):
         super().__init__()
+        self.input_size = input_size
         if rnn_type not in RNN_TYPES:
             raise ValueError(f"Invalid rnn_type: {rnn_type}. Must be one of {RNN_TYPES}.")
         if kernel_size < 1:
@@ -94,7 +95,7 @@ class RNNWithCNNModel(nn.Module):
 
     def get_config(self):
         return {
-            "input_size": self.rnn.input_size,
+            "input_size": self.input_size,
             "hidden_size": self.rnn.hidden_size,
             "num_conv_layers": len(self.cnn_blocks),
             "num_rnn_layers": self.rnn.num_layers,
