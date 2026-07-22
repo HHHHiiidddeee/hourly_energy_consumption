@@ -18,11 +18,27 @@ class PositionalEncoding(nn.Module):
         return x
 
 class TimeSeriesTransformerModel(nn.Module):
-    def __init__(self, input_size, output_channels, kernel_size, output_size, 
+    def __init__(self, input_size, output_channels, num_conv_layers, kernel_size, output_size, 
                  num_heads, dim_feedforward, num_layers, dropout):
         super().__init__()
-        self.conv = nn.Conv1d(input_size, output_channels, kernel_size=kernel_size, 
-                              padding=kernel_size//2)
+        self.input_size = input_size
+        self.output_channels = output_channels
+        self.kernel_size = kernel_size
+        self.cnn_blocks = nn.ModuleList()
+        if num_conv_layers > 0:
+            for i in range(num_conv_layers):
+                in_channels = input_size if i == 0 else output_channels
+                out_channels = output_channels
+                self.cnn_blocks.append(
+                    nn.Sequential(
+                        nn.Conv1d(in_channels, out_channels, kernel_size, stride=2, padding=(kernel_size-2) // 2),
+                        nn.BatchNorm1d(out_channels),
+                        nn.ReLU(),
+                        nn.Dropout(dropout)
+                    )
+                )
+        else:
+            self.embedding = nn.Linear(input_size, output_channels)
         self.pe = PositionalEncoding(d_model=output_channels)
         self.dropout = nn.Dropout(dropout)
         self.transformer_encoder = nn.TransformerEncoder(
@@ -33,7 +49,11 @@ class TimeSeriesTransformerModel(nn.Module):
         self.fc = nn.Linear(output_channels, output_size)
     
     def forward(self, x):
-        x = self.conv(x.transpose(1, 2)).transpose(1, 2)
+        if len(self.cnn_blocks) > 0:
+            for block in self.cnn_blocks:
+                x = block(x.transpose(1, 2)).transpose(1, 2)
+        else:
+            x = self.embedding(x)
         x = self.pe(x)
         x = self.dropout(x)
         x = self.transformer_encoder(x)
@@ -42,9 +62,10 @@ class TimeSeriesTransformerModel(nn.Module):
 
     def get_config(self):
         return {
-            "input_size": self.conv.in_channels,
-            "output_channels": self.conv.out_channels,
-            "kernel_size": self.conv.kernel_size[0],
+            "input_size": self.input_size,
+            "output_channels": self.output_channels,
+            "num_conv_layers": len(self.cnn_blocks),
+            "kernel_size": self.kernel_size, 
             "output_size": self.fc.out_features,
             "num_heads": self.transformer_encoder.layers[0].self_attn.num_heads,
             "dim_feedforward": self.transformer_encoder.layers[0].linear1.out_features,

@@ -1,0 +1,18 @@
+{
+  "model_name": "TimeSeriesTransformerModel",
+  "training_info": {
+    "start_time": "2026-07-22T07:57:10.126706",
+    "end_time": "2026-07-22T07:57:48.789616",
+    "total_epochs": 44,
+    "best_val_loss": Infinity,
+    "learning_rate": 0.0013116452991056213,
+    "weight_decay": 1.7825601965382193e-05,
+    "early_stopping_patience": 10,
+    "device": "cuda"
+  },
+  "final_metrics": {
+    "best_val_loss": Infinity,
+    "final_train_loss": 0.23410935664460772,
+    "final_val_loss": NaN
+  }
+}
